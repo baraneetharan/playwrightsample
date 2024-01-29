@@ -1,6 +1,8 @@
 package com.kgisl.playwrightsample;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.microsoft.playwright.APIRequest;
 import com.microsoft.playwright.APIRequestContext;
@@ -33,8 +35,8 @@ public class TestAPI {
 
   void createAPIRequestContext() {
     Map<String, String> headers = new HashMap<>();
-    // We set this header per GitHub guidelines.
-    // headers.put("Accept", "application/vnd.github.v3+json");
+    // We set this header per your developer guidelines.
+    // headers.put("Accept", "application/json");
     // Add authorization token to all requests.
     // Assuming personal access token available in the environment.
     // headers.put("Authorization", "token " + API_TOKEN);
@@ -74,75 +76,72 @@ public class TestAPI {
 
     APIResponse response = request.post("/customer", RequestOptions.create().setData(data));
 
-    int responseCode = response.status();
-    String responseStatusText = response.statusText();
-    String responseText = response.text();
+    Customer customer = new Gson().fromJson(response.text(), Customer.class);
 
-    System.out.println(responseCode);
-    System.out.println(responseStatusText);
-    System.out.println(responseText);
+    assertEquals(201, response.status());
+    // assertEquals("OK", response.statusText());
+    assertEquals(customer.getFirstName(), "PlaywrightF1");
+    assertEquals(customer.getLastName(), "PlaywrightL1");
+    assertEquals(customer.getEmail(), "email1@email.com");
   }
 
   @Test
   void shouldGetAllCustomers() {
-    // Map<String, String> headers = new HashMap<>();
+    // SELECT count(*) FROM CUSTOMER
+    // http://localhost:10000/customer
+    // https://jsonpathfinder.com/
 
     APIResponse response = request.get("/customer");
-    int responseCode = response.status();
-    String responseStatusText = response.statusText();
-    String responseText = response.text();
 
-    System.out.println(responseCode);
-    System.out.println(responseStatusText);
-    System.out.println(responseText);
+    JsonArray json = new Gson().fromJson(response.text(), JsonArray.class);
+    assertEquals(5,json.size());
+    // JsonElement firstValue = json.get(0);
+    Customer firstCustomer = new Gson().fromJson(json.get(0), Customer.class);
+    
+    assertEquals(firstCustomer.getFirstName(), "John");
+    assertEquals(firstCustomer.getLastName(), "Doe");
+    assertEquals(firstCustomer.getEmail(), "john.doe@example.com");    
   }
 
   @Test
   void shouldGetCustomer() {
-    APIResponse response = request.get("/customer/4");
-    int responseCode = response.status();
-    String responseStatusText = response.statusText();
-    String responseText = response.text();
-    Customer customer = new Gson().fromJson(responseText, Customer.class);
+    // http://localhost:10000/customer/5
+    // {"id":5,"firstName":"Emily","lastName":"Davis","email":"emily.davis@example.com"}
 
+    APIResponse response = request.get("/customer/5");
+
+    Customer customer = new Gson().fromJson(response.text(), Customer.class);
+
+    assertEquals(200, response.status());
+    // assertEquals("OK", response.statusText());
     assertEquals(customer.getFirstName(), "Emily");
     assertEquals(customer.getLastName(), "Davis");
     assertEquals(customer.getEmail(), "emily.davis@example.com");
-
-    System.out.println(responseCode);
-    System.out.println(responseStatusText);
-    System.out.println(responseText);
-
   }
 
   @Test
   void shouldDeleteCustomer() {
-    APIResponse response = request.delete("/customer/4");
-    int responseCode = response.status();
-    String responseStatusText = response.statusText();
-    String responseText = response.text();
-
-    System.out.println(responseCode);
-    System.out.println(responseStatusText);
-    System.out.println(responseText);
+    // http://localhost:10000/customer/6
+    APIResponse response = request.delete("/customer/6");
+    assertEquals(204, response.status());
   }
 
   @Test
   void shouldUpdateCustomer() {
+    // {"id":87,"firstName":"Jane","lastName":"Smith","email":"jane.smith@example.com"},{"id":88,"firstName":"Alice","lastName":"Jones","email":"alice.jones@example.com"}
     Map<String, String> data = new HashMap<>();
-    data.put("id", "85");
-    data.put("firstName", "PlaywrightF85");
-    data.put("lastName", "PlaywrightL85");
-    data.put("email", "email85@email.com");
+    data.put("id", "7");
+    data.put("firstName", "Baraneetharan");
+    data.put("lastName", "Ramasamy");
+    data.put("email", "baranee@email.com");
 
-    APIResponse response = request.put("/customer/85", RequestOptions.create().setData(data));
-
-    int responseCode = response.status();
-    String responseStatusText = response.statusText();
-    String responseText = response.text();
-
-    System.out.println(responseCode);
-    System.out.println(responseStatusText);
-    System.out.println(responseText);
+    APIResponse response = request.put("/customer/7", RequestOptions.create().setData(data));
+    Customer customer = new Gson().fromJson(response.text(), Customer.class);
+    // {"id":87,"firstName":"PlaywrightF87","lastName":"PlaywrightL87","email":"email87@email.com"}
+    assertEquals(200, response.status());
+    // assertEquals("OK", response.statusText());
+    assertEquals(customer.getFirstName(), "Baraneetharan");
+    assertEquals(customer.getLastName(), "Ramasamy");
+    assertEquals(customer.getEmail(), "baranee@email.com");    
   }
 }

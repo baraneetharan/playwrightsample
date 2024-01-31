@@ -24,13 +24,11 @@ jobs:
           npx playwright --chromium=ci  
       - name: Run tests
         run: mvn -Dtest=TestAPI test
-             status = $?
       - name: Stop Playwright
         run: |
           pkill playwright
 
       - name: Report test results
-        if: status.code == 0
         run: |
           mvn test -Dtest=TestAPI -DoutputType=json > report.json
           echo "Test Results: $(cat report.json)" >> output.txt  

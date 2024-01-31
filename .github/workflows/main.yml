@@ -16,6 +16,11 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+      - name: Install Node.js
+        id: node-install
+        run: |
+          curl -sL https://deb.nodesource.com/setup_17.x | bash -
+          apt-get install -y nodejs    
       - name: Build & Install
         run: mvn -B install -D skipTests --no-transfer-progress
       - name: Start Playwright

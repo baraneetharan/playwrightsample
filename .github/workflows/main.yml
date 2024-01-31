@@ -24,6 +24,7 @@ jobs:
           npx playwright --chromium=ci  
       - name: Run tests
         run: mvn -Dtest=TestAPI test
+             status = $?
       - name: Stop Playwright
         run: |
           pkill playwright

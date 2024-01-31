@@ -18,7 +18,20 @@ jobs:
           java-version: '17'
       - name: Build & Install
         run: mvn -B install -D skipTests --no-transfer-progress
+      - name: Start Playwright
+        run: |
+          npm install playwright
+          npx playwright --chromium=ci  
       - name: Run tests
         run: mvn -Dtest=TestAPI test
+      - name: Stop Playwright
+        run: |
+          pkill playwright
+
+      - name: Report test results
+        if: status.code == 0
+        run: |
+          mvn test -Dtest=TestAPI -DoutputType=json > report.json
+          echo "Test Results: $(cat report.json)" >> output.txt  
         env:
           HOME: /root
